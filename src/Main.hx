@@ -42,6 +42,7 @@ class Main extends hxd.App {
         game = new Game(s2d);
             
         frameRateLabel = new h2d.Text(hxd.res.DefaultFont.get(), s2d);
+        frameRateLabel.color = new h3d.Vector(0, 0, 0, 1);
     }
 
     override function update(dt : Float) {

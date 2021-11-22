@@ -78,12 +78,12 @@ class Player {
         this.upDown = false;
         
         this.y += this.speedY * dt;
-        this.x = Math.min(this.x, 256 - TILE_SIZE);
-        this.x = Math.max(this.x, 0);
+        this.x = Math.min(this.x, 256 - TILE_SIZE * 6);
+        this.x = Math.max(this.x, TILE_SIZE * 5);
         this.y = Math.min(this.y, 240 - TILE_SIZE);
         this.y = Math.max(this.y, 0);
         if (this.y >= 240 - TILE_SIZE * 3) {
-            this.y = 0;
+            this.y = 240 - TILE_SIZE * 3;
         }
         this.render();
     }
