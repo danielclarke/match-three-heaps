@@ -5,12 +5,11 @@ import hxd.Key;
 var TILE_SIZE = 16;
 
 class Player {
-	var sprites:Array<h2d.Bitmap>;
-	var speedY:Float;
-
 	public var x:Float;
 	public var y:Float;
+	public var sprites:Array<h2d.Bitmap>;
 
+	var speedY:Float;
 	var elapsedTime:Float;
 	var leftDown:Bool;
 	var rightDown:Bool;
@@ -82,28 +81,28 @@ class Player {
 		this.y += this.speedY * dt;
 		this.x = Math.min(this.x, 5);
 		this.x = Math.max(this.x, 0);
-		this.y = Math.min(this.y, 15);
-		this.y = Math.max(this.y, 0);
-		if (this.y >= 15) {
-			this.respawn();
-		}
+		this.y = Math.max(this.y, -1);
+		this.y = Math.min(this.y, 14);
+		// if (this.y >= 14) {
+		// 	this.respawn();
+		// }
 		this.render();
 	}
 
 	public function render() {
 		for (i in [0, 1, 2]) {
 			this.sprites[i].x = (this.x + 5) * TILE_SIZE;
-			this.sprites[i].y = (this.y - i - 1) * TILE_SIZE;
+			this.sprites[i].y = (this.y - i) * TILE_SIZE;
 		}
 	}
 
 	public function respawn() {
 		this.x = 0;
-		this.y = -3;
+		this.y = -1;
 		this.speedY = 1;
 	}
 
 	function cycle() {
-		this.sprites = [this.sprites[1], this.sprites[2], this.sprites[0]];
+		this.sprites = [this.sprites[2], this.sprites[0], this.sprites[1]];
 	}
 }

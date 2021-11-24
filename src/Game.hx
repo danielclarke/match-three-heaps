@@ -25,23 +25,43 @@ class Game {
 	public function update(dt:Float) {
 		var x = Math.floor(this.player.x);
 		var y = Math.ceil(this.player.y);
-		var freeCells = [[true, true, true], [true, true, true]];
+		var freeCells = [true, true, true, true, true];
 
-		// if (x == 0) {
-		// 	freeCells[0][0] = false;
-		// 	freeCells[0][1] = false;
-		// } else if (x == 5) {
-		// 	freeCells[2][0] = false;
-		// 	freeCells[2][1] = false;
-		// }
+		if (x == 0) {
+			freeCells[0] = false;
+			freeCells[1] = false;
+		} else if (x == 5) {
+			freeCells[3] = false;
+			freeCells[4] = false;
+		} else {
+			freeCells[0] = this.cells[x - 1][y].alpha < 1;
+			freeCells[3] = this.cells[x + 1][y].alpha < 1;
+			if (y < 14) {
+				freeCells[2] = this.cells[x][y + 1].alpha < 1;
+				freeCells[1] = this.cells[x - 1][y + 1].alpha < 1;
+				freeCells[4] = this.cells[x + 1][y + 1].alpha < 1;
+			}
+		}
+
+		if (Math.floor(this.player.y) == 14) {
+			this.handleCollision();
+		}
 
 		this.player.update(dt);
-		this.handleCollision();
 	}
 
 	public function render() {}
 
-	function handleCollision() {}
+	function handleCollision() {
+		var x = Math.floor(this.player.x);
+		var y = Math.ceil(this.player.y);
+
+		this.cells[x][y - 2] = this.player.sprites[0];
+		this.cells[x][y - 1] = this.player.sprites[1];
+		this.cells[x][y] = this.player.sprites[2];
+
+		this.player.respawn();
+	}
 
 	function renderBg() {
 		for (i in 0...16) {
