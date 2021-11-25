@@ -1,12 +1,13 @@
-import Game.TILE_SIZE;
 import hxd.Math;
 import hxd.Key;
+import Gem;
 
 var TILE_SIZE = 16;
 
 class Player {
 	public var x:Float;
 	public var y:Float;
+	public var gems:Array<Gem>;
 	public var sprites:Array<h2d.Bitmap>;
 
 	var speedY:Float;
@@ -21,6 +22,7 @@ class Player {
 	var downTime:Float;
 
 	public function new(s2d:h2d.Scene) {
+		this.gems = [Red, Green, Blue];
 		this.sprites = [
 			new h2d.Bitmap(h2d.Tile.fromColor(0xFF0000, TILE_SIZE, TILE_SIZE), s2d),
 			new h2d.Bitmap(h2d.Tile.fromColor(0x00FF00, TILE_SIZE, TILE_SIZE), s2d),
@@ -41,18 +43,38 @@ class Player {
 		this.downTime = 0;
 	}
 
-	public function update(dt:Float) {
+	public function update(dt:Float, cells:Array<Array<Gem>>) {
+		var x = Math.floor(this.x);
+		var y = Math.ceil(this.y);
+		var freeCells = [true, true, true, true, true];
+
+		if (x == 0) {
+			freeCells[0] = false;
+			freeCells[1] = false;
+		} else if (x == 5) {
+			freeCells[3] = false;
+			freeCells[4] = false;
+		} else {
+			freeCells[0] = cells[x - 1][y] == null;
+			freeCells[4] = cells[x + 1][y] == null;
+			if (y < 14) {
+				freeCells[1] = cells[x - 1][y + 1] == null;
+				freeCells[2] = cells[x][y + 1] == null;
+				freeCells[3] = cells[x + 1][y + 1] == null;
+			}
+		}
+
 		this.elapsedTime += dt;
 		this.leftTime += dt;
 		this.rightTime += dt;
 		this.upTime += dt;
 		this.downTime += dt;
 
-		if (leftTime > 0.1 && Key.isDown(Key.LEFT)) {
+		if (leftTime > 0.1 && Key.isDown(Key.LEFT) && freeCells[0]) {
 			this.leftDown = true;
 			leftTime = 0;
 		}
-		if (rightTime > 0.1 && Key.isDown(Key.RIGHT)) {
+		if (rightTime > 0.1 && Key.isDown(Key.RIGHT) && freeCells[4]) {
 			this.rightDown = true;
 			rightTime = 0;
 		}
@@ -83,9 +105,7 @@ class Player {
 		this.x = Math.max(this.x, 0);
 		this.y = Math.max(this.y, -1);
 		this.y = Math.min(this.y, 14);
-		// if (this.y >= 14) {
-		// 	this.respawn();
-		// }
+
 		this.render();
 	}
 
