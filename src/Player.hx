@@ -100,14 +100,13 @@ class Player {
 		}
 
 		x = Math.floor(this.x);
-		if (y < 14) {
+		if (y <= 14) {
 			freeCells[2] = cells[x][y] == None;
 		} else {
 			freeCells[2] = false;
 		}
 		if (!freeCells[2]) {
 			this.speedY = 0;
-			// this.y = Math.ceil(this.y);
 		} else if (Key.isDown(Key.DOWN)) {
 			this.speedY = 50;
 		}
@@ -115,15 +114,7 @@ class Player {
 		this.leftDown = false;
 		this.rightDown = false;
 		this.upDown = false;
-
 		this.y += this.speedY * dt;
-		this.x = Math.min(this.x, 5);
-		this.x = Math.max(this.x, 0);
-		this.y = Math.max(this.y, -1);
-		this.y = Math.min(this.y, 14);
-
-		trace(this.y);
-
 		this.render();
 	}
 
