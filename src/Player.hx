@@ -1,3 +1,4 @@
+import haxe.ds.Map;
 import hxd.Math;
 import hxd.Key;
 import Gem;
@@ -9,8 +10,9 @@ class Player {
 	public var y:Float;
 	public var gems:Array<Gem>;
 	public var sprites:Array<h2d.Bitmap>;
+	public var speedY:Float;
 
-	var speedY:Float;
+	var tiles:Map<Int, h2d.Tile>;
 	var elapsedTime:Float;
 	var leftDown:Bool;
 	var rightDown:Bool;
@@ -22,11 +24,20 @@ class Player {
 	var downTime:Float;
 
 	public function new(s2d:h2d.Scene) {
-		this.gems = [Red, Green, Blue];
+		this.tiles = [
+			Red => h2d.Tile.fromColor(0xFF0000, TILE_SIZE, TILE_SIZE),
+			Green => h2d.Tile.fromColor(0x00FF00, TILE_SIZE, TILE_SIZE),
+			Blue => h2d.Tile.fromColor(0x0000FF, TILE_SIZE, TILE_SIZE),
+			Cyan => h2d.Tile.fromColor(0x00FFFF, TILE_SIZE, TILE_SIZE),
+			Magenta => h2d.Tile.fromColor(0xFF00FF, TILE_SIZE, TILE_SIZE),
+			Yellow => h2d.Tile.fromColor(0xFFFF00, TILE_SIZE, TILE_SIZE),
+		];
+
+		this.gems = [Basic(Red), Basic(Green), Basic(Blue)];
 		this.sprites = [
-			new h2d.Bitmap(h2d.Tile.fromColor(0xFF0000, TILE_SIZE, TILE_SIZE), s2d),
-			new h2d.Bitmap(h2d.Tile.fromColor(0x00FF00, TILE_SIZE, TILE_SIZE), s2d),
-			new h2d.Bitmap(h2d.Tile.fromColor(0x0000FF, TILE_SIZE, TILE_SIZE), s2d),
+			new h2d.Bitmap(tiles[Red], s2d),
+			new h2d.Bitmap(tiles[Green], s2d),
+			new h2d.Bitmap(tiles[Blue], s2d),
 		];
 		this.x = 0;
 		this.y = 0;
@@ -55,13 +66,8 @@ class Player {
 			freeCells[3] = false;
 			freeCells[4] = false;
 		} else {
-			freeCells[0] = cells[x - 1][y] == null;
-			freeCells[4] = cells[x + 1][y] == null;
-			if (y < 14) {
-				freeCells[1] = cells[x - 1][y + 1] == null;
-				freeCells[2] = cells[x][y + 1] == null;
-				freeCells[3] = cells[x + 1][y + 1] == null;
-			}
+			freeCells[0] = cells[x - 1][y] == None;
+			freeCells[4] = cells[x + 1][y] == None;
 		}
 
 		this.elapsedTime += dt;
@@ -82,9 +88,6 @@ class Player {
 			this.upDown = true;
 			upTime = 0;
 		}
-		if (Key.isDown(Key.DOWN)) {
-			this.speedY = 50;
-		}
 
 		if (this.leftDown) {
 			this.x -= 1;
@@ -94,6 +97,19 @@ class Player {
 		}
 		if (this.upDown) {
 			this.cycle();
+		}
+
+		x = Math.floor(this.x);
+		if (y < 14) {
+			freeCells[2] = cells[x][y] == None;
+		} else {
+			freeCells[2] = false;
+		}
+		if (!freeCells[2]) {
+			this.speedY = 0;
+			// this.y = Math.ceil(this.y);
+		} else if (Key.isDown(Key.DOWN)) {
+			this.speedY = 50;
 		}
 
 		this.leftDown = false;
@@ -106,6 +122,8 @@ class Player {
 		this.y = Math.max(this.y, -1);
 		this.y = Math.min(this.y, 14);
 
+		trace(this.y);
+
 		this.render();
 	}
 
@@ -113,16 +131,26 @@ class Player {
 		for (i in [0, 1, 2]) {
 			this.sprites[i].x = (this.x + 5) * TILE_SIZE;
 			this.sprites[i].y = (this.y - i) * TILE_SIZE;
+			switch this.gems[i] {
+				case Basic(color):
+					{
+						this.sprites[i].tile = tiles[color];
+					}
+				case Bomb(color):
+					{}
+				case None:
+					{}
+			}
 		}
 	}
 
 	public function respawn() {
 		this.x = 0;
-		this.y = -1;
+		this.y = 0;
 		this.speedY = 1;
 	}
 
 	function cycle() {
-		this.sprites = [this.sprites[2], this.sprites[0], this.sprites[1]];
+		this.gems = [this.gems[2], this.gems[0], this.gems[1]];
 	}
 }

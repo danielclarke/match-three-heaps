@@ -8,13 +8,26 @@ class Game {
 	var player:Player;
 	var cells:Array<Array<Gem>>;
 	var sprites:Array<Array<h2d.Bitmap>>;
+	var tiles:Map<Int, h2d.Tile>;
 
 	public function new(s2d:h2d.Scene) {
+		this.tiles = [
+			Red => h2d.Tile.fromColor(0xFF0000, TILE_SIZE, TILE_SIZE),
+			Green => h2d.Tile.fromColor(0x00FF00, TILE_SIZE, TILE_SIZE),
+			Blue => h2d.Tile.fromColor(0x0000FF, TILE_SIZE, TILE_SIZE),
+			Cyan => h2d.Tile.fromColor(0x00FFFF, TILE_SIZE, TILE_SIZE),
+			Magenta => h2d.Tile.fromColor(0xFF00FF, TILE_SIZE, TILE_SIZE),
+			Yellow => h2d.Tile.fromColor(0xFFFF00, TILE_SIZE, TILE_SIZE),
+		];
+
 		this.s2d = s2d;
 		this.renderBg();
 		var tile = h2d.Tile.fromColor(0x000000, TILE_SIZE - 1, TILE_SIZE - 1);
-		this.cells = [for (i in 0...6) [for (j in 0...15) null]];
+		this.cells = [for (i in 0...6) [for (j in 0...15) None]];
 		this.sprites = [for (i in 0...6) [for (j in 0...15) new h2d.Bitmap(tile, s2d)]];
+		// this.cells[0][6] = Basic(Red);
+		// this.cells[1][6] = Basic(Green);
+		// this.cells[2][6] = Basic(Blue);
 		for (i in 0...6) {
 			for (j in 0...15) {
 				this.sprites[i][j].x = i * TILE_SIZE + TILE_SIZE * 5;
@@ -26,55 +39,48 @@ class Game {
 	}
 
 	public function update(dt:Float) {
-		var x = Math.floor(this.player.x);
-		var y = Math.ceil(this.player.y);
-		var freeCells = [true, true, true, true, true];
-
-		// switch this.cells[0][0] {
-		//     case null: trace("null case");
-		//     case Red: trace("Red case");
-		//     case _: trace("Other case");
-		// }
-
-		if (x == 0) {
-			freeCells[0] = false;
-			freeCells[1] = false;
-		} else if (x == 5) {
-			freeCells[3] = false;
-			freeCells[4] = false;
-		} else {
-			freeCells[0] = this.sprites[x - 1][y].alpha < 1;
-			freeCells[3] = this.sprites[x + 1][y].alpha < 1;
-			if (y < 14) {
-				freeCells[2] = this.sprites[x][y + 1].alpha < 1;
-				freeCells[1] = this.sprites[x - 1][y + 1].alpha < 1;
-				freeCells[4] = this.sprites[x + 1][y + 1].alpha < 1;
-			}
-		}
-
-		if (Math.floor(player.y) == 14) {
+		if (player.speedY == 0) {
 			this.handleCollision();
 		}
 		this.player.update(dt, this.cells);
+		this.render();
 	}
-
-	public function render() {}
 
 	function handleCollision() {
 		var x = Math.floor(this.player.x);
 		var y = Math.floor(this.player.y);
 
-		this.sprites[x][y - 2].tile = this.player.sprites[2].tile;
-		this.sprites[x][y - 2].alpha = 1;
-		this.cells[x][y - 2] = this.player.gems[2];
-		this.sprites[x][y - 1].tile = this.player.sprites[1].tile;
-		this.sprites[x][y - 1].alpha = 1;
-		this.cells[x][y - 1] = this.player.gems[1];
-		this.sprites[x][y].tile = this.player.sprites[0].tile;
-		this.sprites[x][y].alpha = 1;
-		this.cells[x][y] = this.player.gems[0];
+		if (y - 2 >= 0) {
+			this.cells[x][y - 2] = this.player.gems[2];
+		}
+		if (y - 1 >= 0) {
+			this.cells[x][y - 1] = this.player.gems[1];
+		}
+		if (y >= 0) {
+			this.cells[x][y] = this.player.gems[0];
+		}
 
 		this.player.respawn();
+	}
+
+	public function render() {
+		for (i in 0...6) {
+			for (j in 0...15) {
+				switch this.cells[i][j] {
+					case Basic(color):
+						{
+							this.sprites[i][j].tile = tiles[color];
+							this.sprites[i][j].alpha = 1;
+						}
+					case Bomb(color):
+						{}
+					case None:
+						{
+							this.sprites[i][j].alpha = 0;
+						}
+				}
+			}
+		}
 	}
 
 	function renderBg() {
