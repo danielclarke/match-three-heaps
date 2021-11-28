@@ -56,8 +56,21 @@ class Player {
 
 	public function update(dt:Float, cells:Array<Array<Gem>>) {
 		var x = Math.floor(this.x);
-		var y = Math.ceil(this.y);
+
 		var freeCells = [true, true, true, true, true];
+
+		this.elapsedTime += dt;
+		this.leftTime += dt;
+		this.rightTime += dt;
+		this.upTime += dt;
+		this.downTime += dt;
+
+		if (Key.isDown(Key.DOWN)) {
+			this.speedY = 25;
+		}
+
+		this.y += this.speedY * dt;
+		var y = Math.ceil(this.y);
 
 		if (x == 0) {
 			freeCells[0] = false;
@@ -69,12 +82,6 @@ class Player {
 			freeCells[0] = cells[x - 1][y] == None;
 			freeCells[4] = cells[x + 1][y] == None;
 		}
-
-		this.elapsedTime += dt;
-		this.leftTime += dt;
-		this.rightTime += dt;
-		this.upTime += dt;
-		this.downTime += dt;
 
 		if (leftTime > 0.1 && Key.isDown(Key.LEFT) && freeCells[0]) {
 			this.leftDown = true;
@@ -105,10 +112,10 @@ class Player {
 		} else {
 			freeCells[2] = false;
 		}
+
 		if (!freeCells[2]) {
 			this.speedY = 0;
-		} else if (Key.isDown(Key.DOWN)) {
-			this.speedY = 50;
+			this.y = Math.floor(this.y);
 		}
 
 		this.leftDown = false;
